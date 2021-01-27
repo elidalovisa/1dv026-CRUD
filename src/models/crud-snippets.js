@@ -21,4 +21,4 @@ const schema = new mongoose.Schema({
 })
 
 // Create a model using the schema.
-export const CrudSnippets = mongoose.model('CrudSnippets', schema)
+export const Snippet = mongoose.model('Snippet', schema)
