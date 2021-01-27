@@ -25,7 +25,7 @@ const schema = new mongoose.Schema({
 export const Snippet = mongoose.model('Snippet', schema)
 
 // Create a schema fro login.
-const schemaLogin = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
@@ -42,9 +42,28 @@ const schemaLogin = new mongoose.Schema({
 })
 
 // Salts and hashes password before saving it to database.
-schemaLogin.pre('save', async function () {
+userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, 8)
 })
 
 // Create a model using the schema.
-export const Login = mongoose.model('Login', schemaLogin)
+export const User = mongoose.model('User', userSchema)
+
+/**
+ * Deletes the specified snippet.
+ *
+ * @param {string} username - Username string.
+ * @param {string} password - Password string.
+ * @returns {object} - User object.
+ */
+userSchema.statics.authenticate = async function (username, password) {
+  const user = await this.findOne({ username }) // Get username from database.
+
+  // If no user found or password is wrong, throw error.
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw new Error('Invalid login attempt.')
+  }
+
+  // User found and password correct, return user.
+  return user
+}

@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import { Snippet } from '../models/crud-snippets.js'
+import { Snippet, User } from '../models/crud-snippets.js'
 
 /**
  * Encapsulates a controller.
@@ -190,3 +190,28 @@ export class CrudSnippetsController {
     }
   }
 }
+
+/** 
+ * Login user and regenerate a session cookie.
+ *
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ */
+async loginPost (req, res) {
+    try {
+    const user = await User.authenticate(req.body.username, req.body.password)
+    req.session.regenerate(() => {
+     //..  regenerate a session cookie, store user data in session store and redirect,
+    })
+      req.session.flash = { type: 'success', text: 'Login successful.' }
+      res.redirect('..') // where to redirect
+    } catch (error) {
+         // If auth fails redirect to the login page and show an error message or show status code 401.
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./login') // where to redirect
+    }
+  }
+
+
+
+
