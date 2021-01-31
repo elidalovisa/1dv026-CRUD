@@ -25,7 +25,7 @@ export class CrudSnippetsController {
           .map(snippet => ({
             id: snippet._id,
             description: snippet.description,
-            done: snippet.done
+            value: snippet.value
           }))
       }
       res.render('snippets/index', { viewData }) // Present the data in HTML.
@@ -34,13 +34,13 @@ export class CrudSnippetsController {
     }
   }
 
-   /**
-   * Displays a snippet.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param {Function} next - Express next middleware function.
-   */
+  /**
+  * Displays a snippet.
+  *
+  * @param {object} req - Express request object.
+  * @param {object} res - Express response object.
+  * @param {Function} next - Express next middleware function.
+  */
   /*
   async show (req, res, next) {
     // Get the first product that's id equals the parameter id's value.
@@ -73,10 +73,9 @@ export class CrudSnippetsController {
    */
   async new (req, res) {
     const viewData = {
-      description: '',
-      done: false
+      value: undefined
     }
-    res.render('snippets/new', { viewData })
+    res.render('./snippets/new', { viewData })
   }
 
   /**
@@ -88,8 +87,7 @@ export class CrudSnippetsController {
   async create (req, res) {
     try {
       const snippet = new Snippet({
-        description: req.body.description,
-        done: req.body.done
+        value: req.body.value
       })
 
       await snippet.save() // Save object in mongodb.
@@ -129,7 +127,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async update (req, res) {
+  async update(req, res) {
     try {
       const result = await Snippet.updateOne({ _id: req.body.id }, {
         description: req.body.description,
@@ -157,7 +155,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async remove (req, res) {
+  async remove(req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
@@ -189,29 +187,54 @@ export class CrudSnippetsController {
       res.redirect('./remove')
     }
   }
-}
 
-/** 
- * Login user and regenerate a session cookie.
- *
- * @param {object} req - Express request object.
- * @param {object} res - Express response object.
- */
-async loginPost (req, res) {
+
+ /**
+   * Returns a HTML form to login.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  /*
+  async login (req, res) {
     try {
-    const user = await User.authenticate(req.body.username, req.body.password)
-    req.session.regenerate(() => {
-     //..  regenerate a session cookie, store user data in session store and redirect,
-    })
+*/
+
+  /**
+   * Login user and regenerate a session cookie.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async loginUser (req, res) {
+    try {
+      await User.authenticate(req.body.username, req.body.password)
+      req.session.regenerate(() => {
+        // ..  regenerate a session cookie, store user data in session store and redirect,
+      })
       req.session.flash = { type: 'success', text: 'Login successful.' }
       res.redirect('..') // where to redirect
     } catch (error) {
-         // If auth fails redirect to the login page and show an error message or show status code 401.
+      // If auth fails redirect to the login page and show an error message or show status code 401.
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./login') // where to redirect
     }
   }
 
-
-
-
+  /**
+   * Authorize user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+/*
+  async authurize (req, res) {
+    if(  auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.) {
+   const error = new Error('Forbidden')
+   error.statusCode = 403
+   return next(error)
+  }
+  next()
+}
+*/
+}

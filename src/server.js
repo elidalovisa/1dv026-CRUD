@@ -13,6 +13,9 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { router } from './routes/router.js'
 import { connectDB } from './config/mongoose.js'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 /**
  * The main function of the application.
@@ -22,7 +25,7 @@ const main = async () => {
 
   // Creates an Express application.
   const app = express()
-
+  const baseURL = process.env.BASE_URL || '/'
   // Get the directory name of this module's path.
   const directoryFullName = dirname(fileURLToPath(import.meta.url))
 
@@ -58,8 +61,8 @@ const main = async () => {
 
   // Setup and use session middleware (https://github.com/expressjs/session).
   const sessionOptions = {
-    name: process.env.SESSION_NAME, // Don't use default session cookie name.
-    secret: process.env.SESSION_SECRET, // Change it!!! The secret is used to hash the session with HMAC.
+    name: process.env.SESSION_NAME,
+    secret: process.env.SESSION_SECRET,
     resave: false, // Resave even if a request is not changing the session.
     saveUninitialized: false, // Don't save a created but not modified session.
     cookie: {
@@ -83,6 +86,9 @@ const main = async () => {
       res.locals.flash = req.session.flash
       delete req.session.flash
     }
+
+    // Pass the base URL to the views.
+    res.locals.baseURL = baseURL
 
     next()
   })

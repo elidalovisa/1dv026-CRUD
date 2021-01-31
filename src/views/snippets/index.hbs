@@ -11,8 +11,8 @@
         </tr>
     </thead>
     <tbody>
-        {{#if viewData.tasks.length }}
-        {{#each viewData.tasks}}
+        {{#if viewData.snippets.length }}
+        {{#each viewData.snippets}}
         <tr>
             <td class="text-center text-primary"><span class="far fa-{{#if this.done }}check-square{{else}}square{{/if}}"></span></td>
             <td class="w-100 {{#if this.done }} text-muted {{/if}}">{{this.description}}</td>

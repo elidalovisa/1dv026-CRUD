@@ -6,10 +6,15 @@
  */
 
 import express from 'express'
-import createError from 'http-errors'
+import { router as snippetsRouter } from './snippets-router.js'
 
 export const router = express.Router()
 
-//add router here -> router.use()
-// Catch 404 (ALWAYS keep this as the last route).
-router.use('*', (req, res, next) => next(createError(404)))
+router.use('/', snippetsRouter)
+
+router.use('*', (req, res, next) => {
+  const error = new Error()
+  error.status = 404
+  error.message = 'Not Found'
+  next(error)
+})
