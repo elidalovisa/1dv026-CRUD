@@ -16,7 +16,7 @@ router.get('/', controller.index) // Display list of snippets.
 router.get('/new', controller.new) // Return HTML form to create a new snippet.
 router.post('/create', /*controller.authorize,*/ controller.create) // Create a new snippet.
 router.get('/login', controller.login) // Return HTML form to login.
-router.post('/post', controller.loginUser) // Login user.
+router.post('/loginpost', controller.loginUser) // Login user.
 router.get('/register', controller.register) // Return HTML form to register new user.
 router.post('/registeruser', controller.registerUser) // Register user.
 

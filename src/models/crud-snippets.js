@@ -45,11 +45,8 @@ userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, 8)
 })
 
-// Create a model using the schema.
-export const User = mongoose.model('User', userSchema)
-
 /**
- * Deletes the specified snippet.
+ * Authenticate user.
  *
  * @param {string} username - Username string.
  * @param {string} password - Password string.
@@ -66,3 +63,5 @@ userSchema.statics.authenticate = async function (username, password) {
   // User found and password correct, return user.
   return user
 }
+// Create a model using the schema.
+export const User = mongoose.model('User', userSchema)
