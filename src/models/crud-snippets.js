@@ -12,7 +12,7 @@ import bcrypt from 'bcrypt'
 const schema = new mongoose.Schema({
   value: {
     type: String,
-    required: false, // CHANGE TO TRUE
+    required: false, // CHANGE TO TRUE?
     minlength: 1
   }
 }, {

@@ -18,10 +18,10 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async index(req, res, next) {
+  async index (req, res, next) {
     try {
       const viewData = {
-        tasks: (await Snippet.find({})) // Get all objects and filter out id and value.
+        snippets: (await Snippet.find({})) // Get all objects and filter out id and value.
           .map(snippet => ({
             id: snippet._id,
             value: snippet.value
@@ -40,7 +40,6 @@ export class CrudSnippetsController {
   * @param {object} res - Express response object.
   * @param {Function} next - Express next middleware function.
   */
-  /*
   async show (req, res, next) {
     // Get the first product that's id equals the parameter id's value.
     const snippet = new Snippet()
@@ -48,7 +47,7 @@ export class CrudSnippetsController {
       .shift()
 
     // If no product is found send a 404 (resource not found).
-    if (!product) {
+    if (!snippet) {
       const error = new Error('Not Found')
       error.status = 404
 
@@ -57,12 +56,10 @@ export class CrudSnippetsController {
       next(error)
       return
     }
-
     // Send response with the wanted product.
     const viewData = { snippet }
     res.render('products/show', { viewData })
   }
-*/
 
   /**
    * Returns a HTML form for creating a new snippet.
@@ -70,9 +67,9 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async new(req, res) {
+  async new (req, res) {
     const viewData = {
-      value: undefined
+      value: ''
     }
     res.render('snippets/new', { viewData })
   }
@@ -83,7 +80,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async create(req, res) {
+  async create (req, res) {
     try {
       const snippet = new Snippet({
         value: req.body.value
@@ -105,15 +102,14 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async edit(req, res) {
+  async edit (req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
         id: snippet._id,
-        description: snippet.description,
-        done: snippet.done
+        value: snippet.value
       }
-      res.render('snippets/edit', { viewData })
+      res.render('./snippets/edit', { viewData })
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('..')
@@ -129,8 +125,7 @@ export class CrudSnippetsController {
   async update(req, res) {
     try {
       const result = await Snippet.updateOne({ _id: req.body.id }, {
-        description: req.body.description,
-        done: req.body.done === 'on' // Make done to a boolean to make easier to handle in veiw.
+        value: req.body.value
       })
 
       if (result.nModified === 1) {
@@ -154,15 +149,14 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async remove(req, res) {
+  async remove (req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
         id: snippet._id,
-        description: snippet.description,
-        done: snippet.done
+        value: snippet.value
       }
-      res.render('snippets/remove', { viewData })
+      res.render('./snippets/remove', { viewData })
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('..')
@@ -175,7 +169,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async delete(req, res) {
+  async delete (req, res) {
     try {
       await Snippet.deleteOne({ _id: req.body.id }) // Specify id for snippet that is going to be deleted.
 
@@ -232,7 +226,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async login(req, res) {
+  async login (req, res) {
     const viewData = {
       value: undefined
     }
