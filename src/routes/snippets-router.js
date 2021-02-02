@@ -15,14 +15,15 @@ const controller = new CrudSnippetsController()
 router.get('/', controller.index) // Display list of snippets.
 router.get('/new', controller.new) // Return HTML form to create a new snippet.
 router.post('/create', /*controller.authorize,*/ controller.create) // Create a new snippet.
+router.get('/login', controller.login) // Return HTML form to login.
+router.post('/post', controller.loginUser) // Login user.
+router.get('/register', controller.register) // Return HTML form to register new user.
+router.post('/registeruser', controller.registerUser) // Register user.
 
-
-/*
-//router.get('/login', controller.login) // Return HTML form to login.
-router.post('/login/post', controller.loginUser) // Login user.
 //router.get('/:id', controller.show) // Display specific snippet.
+/*
 router.get('/:id/edit', controller.edit) // Return a HTML form for editing a snippet.
-router.post('/:id/update', /*controller.authorize, controller.update) // Update a specific snippet.
+router.post('/:id/update', controller.authorize, controller.update) // Update a specific snippet.
 router.get('/:id/remove', controller.remove) // Return a HTML form for removing a snippet.
 router.post('/:id/delete', /*controller.authorize, controller.delete) // Delete a specifik snippet.
 */

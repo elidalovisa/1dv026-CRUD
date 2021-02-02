@@ -12,9 +12,8 @@ import bcrypt from 'bcrypt'
 const schema = new mongoose.Schema({
   value: {
     type: String,
-    required: '`{PATH}` is required!',
-    max: [42, '`{PATH}` ({VALUE}) exceeds the limit ({MAX}).'],
-    min: [1, '`{PATH}` ({VALUE}) is beneath the limit ({MIN}).']
+    required: false, // CHANGE TO TRUE
+    minlength: 1
   }
 }, {
   timestamps: true,

@@ -18,13 +18,12 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async index (req, res, next) {
+  async index(req, res, next) {
     try {
       const viewData = {
-        tasks: (await Snippet.find({})) // Get all objects and filter out id, descriptions and if it's done or not.
+        tasks: (await Snippet.find({})) // Get all objects and filter out id and value.
           .map(snippet => ({
             id: snippet._id,
-            description: snippet.description,
             value: snippet.value
           }))
       }
@@ -71,11 +70,11 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async new (req, res) {
+  async new(req, res) {
     const viewData = {
       value: undefined
     }
-    res.render('./snippets/new', { viewData })
+    res.render('snippets/new', { viewData })
   }
 
   /**
@@ -84,7 +83,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async create (req, res) {
+  async create(req, res) {
     try {
       const snippet = new Snippet({
         value: req.body.value
@@ -106,7 +105,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async edit (req, res) {
+  async edit(req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
@@ -176,7 +175,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async delete (req, res) {
+  async delete(req, res) {
     try {
       await Snippet.deleteOne({ _id: req.body.id }) // Specify id for snippet that is going to be deleted.
 
@@ -188,17 +187,57 @@ export class CrudSnippetsController {
     }
   }
 
+  /**
+   * Returns a HTML form to register new user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async register(req, res) {
+    const viewData = {
+      value: undefined
+    }
+    res.render('snippets/register', { viewData })
+  }
 
- /**
+  /**
+   * Register a new user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async registerUser (req, res) {
+    try {
+      // Check if password match.
+
+      // Save user in database.
+      const user = new User({
+        username: req.body.username,
+        password: req.body.password
+      })
+      await user.save() // Save object in mongodb.
+
+      req.session.flash = { type: 'success', text: 'Registration successful.' }
+      res.redirect('..') // where to redirect
+    } catch (error) {
+      // If auth fails redirect to the login page and show an error message or show status code 401.
+      req.session.flash = { type: 'danger', text: error.message } // CHANGE USERNAME ERROR MSG?
+      res.redirect('./register') // where to redirect
+    }
+  }
+
+  /**
    * Returns a HTML form to login.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  /*
-  async login (req, res) {
-    try {
-*/
+  async login(req, res) {
+    const viewData = {
+      value: undefined
+    }
+    res.render('snippets/login', { viewData })
+  }
 
   /**
    * Login user and regenerate a session cookie.
@@ -206,7 +245,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async loginUser (req, res) {
+  async loginUser(req, res) {
     try {
       await User.authenticate(req.body.username, req.body.password)
       req.session.regenerate(() => {
@@ -227,14 +266,14 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-/*
-  async authurize (req, res) {
-    if(  auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.) {
-   const error = new Error('Forbidden')
-   error.statusCode = 403
-   return next(error)
+  /*
+    async authurize (req, res) {
+      if(  auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.) {
+     const error = new Error('Forbidden')
+     error.statusCode = 403
+     return next(error)
+    }
+    next()
   }
-  next()
-}
-*/
+  */
 }
