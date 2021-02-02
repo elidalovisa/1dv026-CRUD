@@ -2,7 +2,7 @@
   <span class="far fa-edit"></span> Edit
 </h1>
 
-<form method="post" action="./snippets/{{viewData.id}}/update">
+<form method="post" action="./{{viewData.id}}/update">
   <input type="hidden" name="id" value="{{viewData.id}}" />
   <div class="form-group">
     <input type="text" class="form-control" name="value" placeholder="Update task description here" value="{{viewData.value}}" required="required" autofocus="autofocus" />
