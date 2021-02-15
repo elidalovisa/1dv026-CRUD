@@ -5,7 +5,8 @@
  * @version 1.0.0
  */
 
-import { Snippet, User } from '../models/crud-snippets.js'
+import { Snippet } from '../models/crud-snippets.js'
+import { User } from '../models/user.js'
 
 /**
  * Encapsulates a controller.
@@ -18,12 +19,14 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async index (req, res, next) {
+  async index(req, res, next) {
     try {
       const viewData = {
         snippets: (await Snippet.find({})) // Get all objects and filter out id and value.
           .map(snippet => ({
             id: snippet._id,
+            title: snippet.title,
+            username: snippet.username,
             value: snippet.value
           }))
       }
@@ -34,40 +37,41 @@ export class CrudSnippetsController {
   }
 
   /**
-  * Displays a snippet.
-  *
-  * @param {object} req - Express request object.
-  * @param {object} res - Express response object.
-  * @param {Function} next - Express next middleware function.
-  */
-  async show (req, res, next) {
-    // Get the first product that's id equals the parameter id's value.
-    const snippet = new Snippet()
-      .filter(snippet => snippet.id === Number(req.params.id))
-      .shift()
+   * Displays a snippet.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
+   */
+  /*
+   async show (req, res, next) {
+     // Get the first product that's id equals the parameter id's value.
+     const snippet = new Snippet()
+       .filter(snippet => snippet.id === Number(req.params.id))
+       .shift()
 
-    // If no product is found send a 404 (resource not found).
-    if (!snippet) {
-      const error = new Error('Not Found')
-      error.status = 404
+     // If no snippet is found send a 404 (resource not found).
+     if (!snippet) {
+       const error = new Error('Not Found')
+       error.status = 404
 
-      // IMPORTANT! Never throw an exception in an async action handler,
-      // always call next!
-      next(error)
-      return
-    }
-    // Send response with the wanted product.
-    const viewData = { snippet }
-    res.render('products/show', { viewData })
-  }
-
+       // IMPORTANT! Never throw an exception in an async action handler,
+       // always call next!
+       next(error)
+       return
+     }
+     // Send response with the wanted product.
+     const viewData = { snippet }
+     res.render('products/show', { viewData })
+   }
+ */
   /**
    * Returns a HTML form for creating a new snippet.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async new (req, res) {
+  async new(req, res) {
     const viewData = {
       value: ''
     }
@@ -80,14 +84,15 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async create (req, res) {
+  async create(req, res) {
     try {
       const snippet = new Snippet({
-        value: req.body.value
+        value: req.body.value,
+        username: req.session.username,
+        title: req.body.title
       })
 
       await snippet.save() // Save object in mongodb.
-
       req.session.flash = { type: 'success', text: 'The snippet was created successfully.' }
       res.redirect('.')
     } catch (error) {
@@ -102,7 +107,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async edit (req, res) {
+  async edit(req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
@@ -149,7 +154,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async remove (req, res) {
+  async remove(req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
@@ -169,7 +174,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async delete (req, res) {
+  async delete(req, res) {
     try {
       await Snippet.deleteOne({ _id: req.body.id }) // Specify id for snippet that is going to be deleted.
 
@@ -187,7 +192,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async register (req, res) {
+  async register(req, res) {
     const viewData = {
       value: undefined
     }
@@ -200,7 +205,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async registerUser (req, res) {
+  async registerUser(req, res) {
     try {
       // Check if password match.
 
@@ -214,10 +219,34 @@ export class CrudSnippetsController {
       req.session.flash = { type: 'success', text: 'Registration successful.' }
       res.redirect('..') // where to redirect
     } catch (error) {
-      // If auth fails redirect to the login page and show an error message or show status code 401.
-      req.session.flash = { type: 'danger', text: error.message } // CHANGE USERNAME ERROR MSG?
+      // If auth fails redirect to the register page and show an error message or show status code 401.
+      req.session.flash = { type: 'danger', text: error.message }
+      error.statusCode = 401
       res.redirect('./register') // where to redirect
     }
+  }
+
+  /**
+   * Check if user is logged in.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param next
+   */
+  async checkUser(req, res, next) {
+    const user = await new User({ user: req.session.user })
+
+    if (req.session) { // If there is no user.
+      req.session.flash = { type: 'danger', text: 'You need to login.' }
+      req.statusCode = 404
+      res.redirect('snippets/login')
+    }
+    //   req.session = user
+    /*
+    visa logga in / logga ut / registrera beroende på om man är inloggad eller ej.
+    */
+    res.render('./') // where to redirect if user is already logged in.
+    next()
   }
 
   /**
@@ -226,7 +255,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async login (req, res) {
+  async login(req, res) {
     const viewData = {
       value: undefined
     }
@@ -241,16 +270,40 @@ export class CrudSnippetsController {
    */
   async loginUser (req, res) {
     try {
-      await User.authenticate(req.body.username, req.body.password)
+      const user = await User.authenticate(req.body.username, req.body.password)
       req.session.regenerate(() => {
-        // ..  regenerate a session cookie, store user data in session store and redirect,
+        req.session.user = user
+        req.session.username = req.body.username // Save users username to session
+        req.session.loggedIn = true // Determine if user is logged in
+        // ..  regenerate a session cookie, store user data in session store and redirect
+        res.redirect('./new') // where to redirect
       })
       req.session.flash = { type: 'success', text: 'Login successful.' }
-      res.redirect('/') // where to redirect
     } catch (error) {
       // If auth fails redirect to the login page and show an error message or show status code 401.
       req.session.flash = { type: 'danger', text: error.message }
+      error.statusCode = 401
       res.redirect('./login') // where to redirect
+    }
+  }
+
+  /**
+   * Log out user.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   */
+  async logout (req, res) {
+    try {
+      // const user = await User.find({ username: req.session.username })
+      if (req.session.loggedIn) {
+        req.session.destroy(() => { })
+        req.session.flash = { type: 'success', text: 'Logout successful.' }
+        res.redirect('snippets/login')
+      }
+    } catch (error) {
+      req.session.flash = { type: 'danger', text: error.message }
+      res.redirect('./register') // where to redirect
     }
   }
 
@@ -259,15 +312,58 @@ export class CrudSnippetsController {
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
+   * @param {object} next -  Express next middleware function.
+   * @returns {object} - Returns error.
    */
-  /*
-    async authurize (req, res) {
-      if(  auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.) {
-     const error = new Error('Forbidden')
-     error.statusCode = 403
-     return next(error)
+  async authurize (req, res, next) {
+    // const user = await User.findOne({ username: req.session.username })
+    if (req.session.loggedIn) {
+      next()
+    } else {
+      // if (!req.session && req.session.id) { // If user is not logged in.
+      const error = new Error('Forbidden')
+      error.statusCode = 404
+      req.session.flash = { type: 'danger', text: 'You need to login' }
+      return next(error)
+      /*
+      res.render('.') // where to redirect
+      const snippetID = new Snippet({ id: req.session._id })
+      if (snippetID === user.id) {
+       console.log('You are the owner of the snippet')
+      }
+      */
+      // auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.
+      // Go to next function in router call.
     }
-    next()
   }
-  */
+
+  /**
+   * Authorize user to see if user own snippet.
+   *
+   * @param {object} req - Express request object.
+   * @param {object} res - Express response object.
+   * @param {object} next -  Express next middleware function.
+   * @returns {object} - Returns error.
+   */
+  async authurizeOwner(req, res, next) {
+    const user = await User.findOne({ username: req.session.username })
+    const snippet = await Snippet.findOne({ username: req.params.username }) // Get the id of the specific snippet.
+    if (snippet !== user) {
+      console.log('You are NOT the owner of the snippet')
+      const error = new Error('Forbidden')
+      error.statusCode = 404
+      req.session.flash = { type: 'danger', text: error.message }
+      return next(error)
+    } else {
+
+      /*
+      res.render('.') // where to redirect
+      const snippetID = new Snippet({ id: req.session._id })
+      if (snippetID === user.id) {
+       console.log('You are the owner of the snippet')
+      }
+      */
+      // auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.
+    } next() // Go to next function in router call.
+  }
 }

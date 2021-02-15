@@ -14,7 +14,7 @@ export class HomeController {
     res.render('home/index')
   }
 
-/**
+  /**
    * Renders a view, based on posted data, and sends
    * the rendered HTML string as an HTTP response.
    *
