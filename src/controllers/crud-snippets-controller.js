@@ -19,7 +19,7 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  async index(req, res, next) {
+  async index (req, res, next) {
     try {
       const viewData = {
         snippets: (await Snippet.find({})) // Get all objects and filter out id and value.
@@ -71,7 +71,8 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async new(req, res) {
+  async new (req, res) {
+    res.locals.session = req.session
     const viewData = {
       value: ''
     }
@@ -84,22 +85,28 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async create(req, res) {
+  async create (req, res) {
     try {
       const snippet = new Snippet({
-        value: req.body.value,
-        username: req.session.username,
+        value: req.session.user.username,
         title: req.body.title
       })
+      snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
 
       await snippet.save() // Save object in mongodb.
-      req.session.flash = { type: 'success', text: 'The snippet was created successfully.' }
+      console.log(snippet.username)
+      console.log(snippet)
       res.redirect('.')
+      req.session.flash = {
+        type: 'success', text: 'The snippet was created successfully.'
+      }
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./new')
     }
   }
+   //  snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
+      //req.session.snippet = snippet
 
   /**
    * Returns a HTML form for editing a snippet.
@@ -107,13 +114,15 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async edit(req, res) {
+  async edit (req, res) {
+    res.locals.session = req.session
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
         id: snippet._id,
         value: snippet.value
       }
+      console.log(snippet.username)
       res.render('./snippets/edit', { viewData })
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
@@ -132,7 +141,6 @@ export class CrudSnippetsController {
       const result = await Snippet.updateOne({ _id: req.body.id }, {
         value: req.body.value
       })
-
       if (result.nModified === 1) {
         req.session.flash = { type: 'success', text: 'The snippet was updated successfully.' }
       } else {
@@ -212,8 +220,7 @@ export class CrudSnippetsController {
       // Save user in database.
       const user = new User({
         username: req.body.username,
-        password: req.body.password
-      })
+        password: req.body.password })
       await user.save() // Save object in mongodb.
 
       req.session.flash = { type: 'success', text: 'Registration successful.' }
@@ -276,9 +283,10 @@ export class CrudSnippetsController {
         req.session.username = req.body.username // Save users username to session
         req.session.loggedIn = true // Determine if user is logged in
         // ..  regenerate a session cookie, store user data in session store and redirect
-        res.redirect('./new') // where to redirect
+        req.session.flash = { type: 'success', text: 'Login successful.' }
+        res.redirect('./') // where to redirect
       })
-      req.session.flash = { type: 'success', text: 'Login successful.' }
+      //await user.save() // Save object in mongodb.
     } catch (error) {
       // If auth fails redirect to the login page and show an error message or show status code 401.
       req.session.flash = { type: 'danger', text: error.message }
@@ -293,14 +301,17 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async logout (req, res) {
+  async logout(req, res) {
     try {
       // const user = await User.find({ username: req.session.username })
-      if (req.session.loggedIn) {
-        req.session.destroy(() => { })
-        req.session.flash = { type: 'success', text: 'Logout successful.' }
-        res.redirect('snippets/login')
-      }
+     // if (req.session.loggedIn) {
+       // req.session.loggedIn = false // Determine if user is logged in
+
+        req.session.destroy(() => {
+        })
+     // }
+      req.session.flash = { type: 'success', text: 'Logout successful.' }
+      res.redirect('snippets/new')
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./register') // where to redirect
@@ -315,7 +326,8 @@ export class CrudSnippetsController {
    * @param {object} next -  Express next middleware function.
    * @returns {object} - Returns error.
    */
-  async authurize (req, res, next) {
+  async authurize(req, res, next) {
+   // res.locals.session = req.session
     // const user = await User.findOne({ username: req.session.username })
     if (req.session.loggedIn) {
       next()
@@ -345,17 +357,16 @@ export class CrudSnippetsController {
    * @param {object} next -  Express next middleware function.
    * @returns {object} - Returns error.
    */
-  async authurizeOwner(req, res, next) {
-    const user = await User.findOne({ username: req.session.username })
-    const snippet = await Snippet.findOne({ username: req.params.username }) // Get the id of the specific snippet.
-    if (snippet !== user) {
+  async authurizeOwner (req, res, next) {
+    console.log(req.session)
+    const snippet = await Snippet.findOne({ _id: req.params.id }) // Get the id of the specific snippet.
+    if (snippet.username !== req.session.user.username) {
       console.log('You are NOT the owner of the snippet')
       const error = new Error('Forbidden')
       error.statusCode = 404
       req.session.flash = { type: 'danger', text: error.message }
       return next(error)
     } else {
-
       /*
       res.render('.') // where to redirect
       const snippetID = new Snippet({ id: req.session._id })

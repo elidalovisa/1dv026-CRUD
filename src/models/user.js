@@ -48,5 +48,5 @@ userSchema.statics.authenticate = async function (username, password) {
   // User found and password correct, return user.
   return user
 }
-// Create a model using the schema. 
+// Create a model using the schema.
 export const User = mongoose.model('User', userSchema)

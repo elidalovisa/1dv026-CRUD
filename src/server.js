@@ -66,9 +66,11 @@ const main = async () => {
     resave: false, // Resave even if a request is not changing the session.
     saveUninitialized: false, // Don't save a created but not modified session.
     cookie: {
+     // path: '/',
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24, // 1 day
-      sameSite: 'lax'
+      sameSite: 'lax',
+      credentials: 'include'
     }
   }
 

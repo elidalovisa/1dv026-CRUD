@@ -13,12 +13,10 @@ const schema = new mongoose.Schema({
     type: String,
     required: false,
     minlength: 1
-  }
-}, {
+  },
   username: {
     type: String,
-    required: true,
-    minlength: 1
+    required: true
   }
 }, {
   timestamps: true,
