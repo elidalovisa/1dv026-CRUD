@@ -88,10 +88,11 @@ export class CrudSnippetsController {
   async create (req, res) {
     try {
       const snippet = new Snippet({
-        value: req.session.user.username,
-        title: req.body.title
+        value: req.body.value,
+        title: req.body.title,
+        username: req.session.user.username
       })
-      snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
+      //snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
 
       await snippet.save() // Save object in mongodb.
       console.log(snippet.username)
@@ -301,17 +302,14 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async logout(req, res) {
+  async logout (req, res) {
     try {
-      // const user = await User.find({ username: req.session.username })
-     // if (req.session.loggedIn) {
-       // req.session.loggedIn = false // Determine if user is logged in
-
+      console.log(req.session)
+        req.session.loggedIn = false // Determine if user is logged in
         req.session.destroy(() => {
+          req.session.flash = { type: 'success', text: 'Logout successful.' }
+          res.redirect('snippets/new')
         })
-     // }
-      req.session.flash = { type: 'success', text: 'Logout successful.' }
-      res.redirect('snippets/new')
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
       res.redirect('./register') // where to redirect
@@ -326,26 +324,14 @@ export class CrudSnippetsController {
    * @param {object} next -  Express next middleware function.
    * @returns {object} - Returns error.
    */
-  async authurize(req, res, next) {
-   // res.locals.session = req.session
-    // const user = await User.findOne({ username: req.session.username })
+  async authurize (req, res, next) {
     if (req.session.loggedIn) {
       next()
     } else {
-      // if (!req.session && req.session.id) { // If user is not logged in.
       const error = new Error('Forbidden')
       error.statusCode = 404
       req.session.flash = { type: 'danger', text: 'You need to login' }
       return next(error)
-      /*
-      res.render('.') // where to redirect
-      const snippetID = new Snippet({ id: req.session._id })
-      if (snippetID === user.id) {
-       console.log('You are the owner of the snippet')
-      }
-      */
-      // auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.
-      // Go to next function in router call.
     }
   }
 
@@ -361,7 +347,6 @@ export class CrudSnippetsController {
     console.log(req.session)
     const snippet = await Snippet.findOne({ _id: req.params.id }) // Get the id of the specific snippet.
     if (snippet.username !== req.session.user.username) {
-      console.log('You are NOT the owner of the snippet')
       const error = new Error('Forbidden')
       error.statusCode = 404
       req.session.flash = { type: 'danger', text: error.message }

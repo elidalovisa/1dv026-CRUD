@@ -16,9 +16,11 @@
         <li class="nav-item">
           <a class="nav-link" href="./new">New snippet</a>
         </li>
+        {{#if req.session.loggedIn}}
         <li class="nav-item">
         <li><a class="nav-link" href="./">Logout</a>
         </li>
+        {{/if}}
           <li class="nav-item">
           <a class="nav-link" href="./login">Login</a>
           </li>       

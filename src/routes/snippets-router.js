@@ -11,8 +11,8 @@ const controller = new CrudSnippetsController()
 export const router = express.Router()
 // Map HTTP verbs and route paths to controller actions.
 router.get('/', /* controller.checkUser, */ controller.index) // Display list of snippets.
-router.get('/new', /*controller.authurize,*/ controller.new) // Return HTML form to create a new snippet.
-router.post('/create', /*controller.authurize,*/ controller.create) // Create a new snippet.
+router.get('/new', controller.new) // Return HTML form to create a new snippet.
+router.post('/create', controller.authurize, controller.create) // Create a new snippet.
 router.get('/login', controller.login) // Return HTML form to login.
 router.post('/loginpost', controller.loginUser) // Login user.
 router.get('/logout', controller.logout) // Logout user

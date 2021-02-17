@@ -4,20 +4,20 @@
 
 <table class="table table-striped">
     <thead>
-        <tr>
-            <th>Description</th>
-        </tr>
+<div><h3>Code Snippets</h3></div>            
     </thead>
     <tbody>
         {{#if viewData.snippets.length}}
     {{#each viewData.snippets}}
-    <tr>
-       <td>
-        <a href="./{{this.id}}/edit"><span class="far fa-edit"></span></a>
-        <a href="./{{this.id}}/remove"><span class="far fa-trash-alt"></span></a>
-            </td>
-      <td>{{this.value}}{{this.username}}</td> 
-    </tr>
+    <div>
+          <h7>{{this.title}}</h7> <br>
+          <a><code>{{this.value}}</code></a> <br>
+          <div><small>Created by: {{this.username}}</small>
+            <a href="./{{this.id}}/edit"><span class="far fa-edit"></span></a>
+            <a href="./{{this.id}}/remove"><span class="far fa-trash-alt"></span></a>
+          </div>
+    </div>
+    <br>
     {{/each}}
     {{else}}
     <tr colspan="2">
