@@ -69,7 +69,7 @@ const main = async () => {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24, // 1 day
       sameSite: 'lax',
-      credentials: 'include'
+    //  credentials: 'include'
     }
   }
 
