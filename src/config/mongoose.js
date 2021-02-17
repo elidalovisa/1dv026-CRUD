@@ -7,9 +7,6 @@
 
 import mongoose from 'mongoose'
 
-// DISCLAIMER: This is an example connection string. ALWAYS use an environment variable to store the connection string.
-// const CONNECTION_STRING = 'mongodb://localhost:27017/<name>'
-
 /**
  * Establishes a connection to a database.
  *

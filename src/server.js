@@ -66,7 +66,6 @@ const main = async () => {
     resave: false, // Resave even if a request is not changing the session.
     saveUninitialized: false, // Don't save a created but not modified session.
     cookie: {
-     // path: '/',
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24, // 1 day
       sameSite: 'lax',
@@ -99,12 +98,18 @@ const main = async () => {
   app.use('/', router)
 
   // Error handler.
-  app.use(function (err, req, res, next) {
+  app.use(function (error, req, res, next) {
     // 404 Not Found.
-    if (err.status === 404) {
+    if (error.statusCode === 404) {
       return res
         .status(404)
         .sendFile(join(directoryFullName, 'views', 'errors', '404.html'))
+    }
+
+    if (error.statusCode === 403) {
+      return res
+        .status(403)
+        .sendFile(join(directoryFullName, 'views', 'errors', '403.html'))
     }
 
     // 500 Internal Server Error (in production, all other errors send this response).
@@ -119,8 +124,8 @@ const main = async () => {
 
     // Render the error page.
     res
-      .status(err.status || 500)
-      .render('errors/error', { error: err })
+      .status(error.statusCode || 500)
+      .render('errors/error', { error: error })
   })
 
   // Starts the HTTP server listening for connections.

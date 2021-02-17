@@ -20,6 +20,7 @@ export class CrudSnippetsController {
    * @param {Function} next - Express next middleware function.
    */
   async index (req, res, next) {
+    res.locals.user = req.session.user
     try {
       const viewData = {
         snippets: (await Snippet.find({})) // Get all objects and filter out id and value.
@@ -43,28 +44,7 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    * @param {Function} next - Express next middleware function.
    */
-  /*
-   async show (req, res, next) {
-     // Get the first product that's id equals the parameter id's value.
-     const snippet = new Snippet()
-       .filter(snippet => snippet.id === Number(req.params.id))
-       .shift()
 
-     // If no snippet is found send a 404 (resource not found).
-     if (!snippet) {
-       const error = new Error('Not Found')
-       error.status = 404
-
-       // IMPORTANT! Never throw an exception in an async action handler,
-       // always call next!
-       next(error)
-       return
-     }
-     // Send response with the wanted product.
-     const viewData = { snippet }
-     res.render('products/show', { viewData })
-   }
- */
   /**
    * Returns a HTML form for creating a new snippet.
    *
@@ -72,7 +52,7 @@ export class CrudSnippetsController {
    * @param {object} res - Express response object.
    */
   async new (req, res) {
-    res.locals.session = req.session
+    res.locals.user = req.session.user
     const viewData = {
       value: ''
     }
@@ -92,11 +72,7 @@ export class CrudSnippetsController {
         title: req.body.title,
         username: req.session.user.username
       })
-      //snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
-
       await snippet.save() // Save object in mongodb.
-      console.log(snippet.username)
-      console.log(snippet)
       res.redirect('.')
       req.session.flash = {
         type: 'success', text: 'The snippet was created successfully.'
@@ -106,8 +82,6 @@ export class CrudSnippetsController {
       res.redirect('./new')
     }
   }
-   //  snippet.username = req.session.user.username // Add session after middleware has been handled, otherwise undefined.
-      //req.session.snippet = snippet
 
   /**
    * Returns a HTML form for editing a snippet.
@@ -123,7 +97,6 @@ export class CrudSnippetsController {
         id: snippet._id,
         value: snippet.value
       }
-      console.log(snippet.username)
       res.render('./snippets/edit', { viewData })
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
@@ -137,7 +110,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async update(req, res) {
+  async update (req, res) {
     try {
       const result = await Snippet.updateOne({ _id: req.body.id }, {
         value: req.body.value
@@ -163,7 +136,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async remove(req, res) {
+  async remove (req, res) {
     try {
       const snippet = await Snippet.findOne({ _id: req.params.id })
       const viewData = {
@@ -183,7 +156,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async delete(req, res) {
+  async delete (req, res) {
     try {
       await Snippet.deleteOne({ _id: req.body.id }) // Specify id for snippet that is going to be deleted.
 
@@ -201,7 +174,7 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async register(req, res) {
+  async register (req, res) {
     const viewData = {
       value: undefined
     }
@@ -214,14 +187,15 @@ export class CrudSnippetsController {
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async registerUser(req, res) {
+  async registerUser (req, res) {
     try {
       // Check if password match.
 
       // Save user in database.
       const user = new User({
         username: req.body.username,
-        password: req.body.password })
+        password: req.body.password
+      })
       await user.save() // Save object in mongodb.
 
       req.session.flash = { type: 'success', text: 'Registration successful.' }
@@ -235,35 +209,12 @@ export class CrudSnippetsController {
   }
 
   /**
-   * Check if user is logged in.
-   *
-   * @param {object} req - Express request object.
-   * @param {object} res - Express response object.
-   * @param next
-   */
-  async checkUser(req, res, next) {
-    const user = await new User({ user: req.session.user })
-
-    if (req.session) { // If there is no user.
-      req.session.flash = { type: 'danger', text: 'You need to login.' }
-      req.statusCode = 404
-      res.redirect('snippets/login')
-    }
-    //   req.session = user
-    /*
-    visa logga in / logga ut / registrera beroende på om man är inloggad eller ej.
-    */
-    res.render('./') // where to redirect if user is already logged in.
-    next()
-  }
-
-  /**
    * Returns a HTML form to login.
    *
    * @param {object} req - Express request object.
    * @param {object} res - Express response object.
    */
-  async login(req, res) {
+  async login (req, res) {
     const viewData = {
       value: undefined
     }
@@ -283,11 +234,11 @@ export class CrudSnippetsController {
         req.session.user = user
         req.session.username = req.body.username // Save users username to session
         req.session.loggedIn = true // Determine if user is logged in
+        res.locals.user = req.session.user
         // ..  regenerate a session cookie, store user data in session store and redirect
         req.session.flash = { type: 'success', text: 'Login successful.' }
         res.redirect('./') // where to redirect
       })
-      //await user.save() // Save object in mongodb.
     } catch (error) {
       // If auth fails redirect to the login page and show an error message or show status code 401.
       req.session.flash = { type: 'danger', text: error.message }
@@ -304,15 +255,12 @@ export class CrudSnippetsController {
    */
   async logout (req, res) {
     try {
-      console.log(req.session)
-        req.session.loggedIn = false // Determine if user is logged in
-        req.session.destroy(() => {
-          req.session.flash = { type: 'success', text: 'Logout successful.' }
-          res.redirect('snippets/new')
-        })
+      req.session.loggedIn = false
+      req.session.destroy()
+      res.redirect('./') // where to redirect
     } catch (error) {
       req.session.flash = { type: 'danger', text: error.message }
-      res.redirect('./register') // where to redirect
+      res.redirect('./login')
     }
   }
 
@@ -344,22 +292,14 @@ export class CrudSnippetsController {
    * @returns {object} - Returns error.
    */
   async authurizeOwner (req, res, next) {
-    console.log(req.session)
     const snippet = await Snippet.findOne({ _id: req.params.id }) // Get the id of the specific snippet.
     if (snippet.username !== req.session.user.username) {
       const error = new Error('Forbidden')
-      error.statusCode = 404
+      error.statusCode = 403
       req.session.flash = { type: 'danger', text: error.message }
       return next(error)
     } else {
-      /*
-      res.render('.') // where to redirect
-      const snippetID = new Snippet({ id: req.session._id })
-      if (snippetID === user.id) {
-       console.log('You are the owner of the snippet')
-      }
-      */
-      // auhuraztion code here, vad behöver undersökas för att användaren ska kunan få tillgång till resurs? Inloggad, vem äger snippet osv Titta i databasen. Beroende på vilken resurs som efterfrågas kan det vara olika typer av authorizering.
-    } next() // Go to next function in router call.
+      next() // Go to next function in router call.
+    }
   }
 }

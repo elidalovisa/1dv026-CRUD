@@ -11,19 +11,19 @@
           <a class="nav-link" href="./">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="./">List</a>
-        </li>
-        <li class="nav-item">
           <a class="nav-link" href="./new">New snippet</a>
         </li>
-        {{#if req.session.loggedIn}}
         <li class="nav-item">
-        <li><a class="nav-link" href="./">Logout</a>
+        {{#if user}}
+        <li><a class="nav-link" href="./logout">Logout</a>
         </li>
-        {{/if}}
+                {{else}}
+
           <li class="nav-item">
           <a class="nav-link" href="./login">Login</a>
           </li>       
+                  {{/if}}
+
       </ul>
     </div>
   </nav>
