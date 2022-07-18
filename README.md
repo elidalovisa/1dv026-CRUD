@@ -1,4 +1,8 @@
-# Assignment B1 - CRUD Snippets
+This application was a project I made as a part of my studies at Linnaeus University.
+
+# The assignment description
+
+## Assignment B1 - CRUD Snippets
 
 In this assignment, you will create a web application to manage code [snippets](https://en.wikipedia.org/wiki/Snippet_(programming)). The web application will use the Node.js platform, Express as the application framework, and Mongoose as the object data modeling (ODM) library for MongoDB.
 
